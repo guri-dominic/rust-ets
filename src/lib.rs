@@ -8,6 +8,29 @@ pub struct SE3 {
     data: Matrix4<f32>,
 }
 
+
+// impl std::ops::Mul<SE3> for &SE3 {
+//     type Output = SE3;
+//     fn mul(self, rhs: SE3) -> SE3 {
+//         //SE3::from_matrix(&self.clone().matrix() * rhs.matrix())
+//         SE3 { data: self.data * rhs.matrix() }
+//     }
+// }
+
+// pub trait Mul<Rhs = Self> {
+//     type Output;
+//     // Required method
+//     fn mul(self, rhs: Rhs) -> Self::Output;
+// }
+
+
+impl Mul for SE3 {
+    type Output = Self;
+    fn mul(self, other: Self) -> Self {
+        Self {data: self.data * other.data}
+    }
+}
+
 impl std::fmt::Display for SE3 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.data)
@@ -75,14 +98,6 @@ impl SE3 {
         self.data.clone()
     }
 }
-
-// impl std::ops::Mul<SE3> for &SE3 {
-//     type Output = SE3;
-//     fn mul(self, rhs: SE3) -> SE3 {
-//         // SE3 { data: self.data * rhs.matrix(), }
-//         SE3::from_matrix(&self.clone().matrix() * rhs.matrix())
-//     }
-// }
 
 #[derive(Copy, Clone)]
 pub enum ET {

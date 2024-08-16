@@ -19,11 +19,12 @@ impl ETS {
         let mut t = SE3::new();
         for e in self.ets.iter() {
             // chain.ets.push(e.clone())
-            // t = t * e.eval();
+            t = t * e.eval();
             // t = SE3 { data: t.matrix() * e.eval().matrix() };
-            t = SE3::from_matrix(t.matrix() * e.eval().matrix());
+            // t = SE3::from_matrix(t.matrix() * e.eval().matrix());
         }
-        t
+        //t
+        base * self.ets.iter().fold(SE3::new(), |acc, x| acc * x.eval()) * tool
     }
     fn new() -> ETS {
         ETS {
@@ -101,5 +102,6 @@ fn main() {
 
     let base = SE3::new();
     let tool = SE3::tz(0.12);
-    println!("etz1 = {}", etz1.eval(vec![0f32], base, tool));
+    println!(" > etz1 = {}", etz1.eval(vec![0f32], base.clone(), tool.clone()));
+    println!(" > base * tool = {}", base * tool);
 }
