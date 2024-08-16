@@ -20,6 +20,9 @@ impl SE3 {
             data: Matrix4::<f32>::identity(),
         }
     }
+    pub fn from_matrix(m: Matrix4<f32>) -> SE3 {
+        SE3 { data: m.clone() }
+    }
     pub fn rpy(roll: f32, pitch: f32, yaw: f32) -> SE3 {
         let mut transform = Matrix4::<f32>::identity();
         let rot = Rotation3::from_euler_angles(roll, pitch, yaw);
@@ -68,32 +71,18 @@ impl SE3 {
         SE3 { data: transform }
     }
 
-    pub fn matrix(self) -> Matrix4<f32> {
+    pub fn matrix(&self) -> Matrix4<f32> {
         self.data.clone()
     }
 }
 
-// impl<T> std::ops::Mul<T> for SE3 {
+// impl std::ops::Mul<SE3> for &SE3 {
+//     type Output = SE3;
 //     fn mul(self, rhs: SE3) -> SE3 {
-//         SE3 {
-//             data: rhs.matrix() * self.matrix(),
-//         }
+//         // SE3 { data: self.data * rhs.matrix(), }
+//         SE3::from_matrix(&self.clone().matrix() * rhs.matrix())
 //     }
 // }
-
-impl<RHS: Copy> Mul<RHS> for SE3
-where
-    SE3: Mul<RHS, Output = SE3>, RHS
-{
-    type Output = SE3;
-
-    fn mul(self, rhs: RHS) -> SE3 {
-        SE3 {
-            // data: <Mul<RHS>>::mul(self.matrix(), rhs.matrix()),
-            data: self.data * rhs.matrix(),
-        }
-    }
-}
 
 #[derive(Copy, Clone)]
 pub enum ET {
