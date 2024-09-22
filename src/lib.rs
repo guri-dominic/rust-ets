@@ -1,14 +1,28 @@
 extern crate nalgebra as na;
 use na::base::Matrix4;
 use na::{
-    DMatrix, DVector, Matrix, Matrix3, Matrix3x4, Matrix3xX, Matrix6, Matrix6xX, MatrixXx6,
-    Rotation3, Translation3, Vector3, Vector6,
+    DMatrix, DVector, Matrix3, Matrix6, Matrix6xX, Rotation3, Translation3, Vector3, Vector6,
 };
 use std::f64::consts::FRAC_PI_2;
 use std::f64::consts::PI;
-use std::ops::Mul;
 
-fn skew(v: Vector3<f64>) -> Matrix3<f64> {
+// use lazy_static::lazy_static;
+// use std::collections::HashMap;
+
+// lazy_static! {
+//     static ref MODELS: HashMap<str, &'str> = {
+//         let mut m = HashMap::new();
+//         m.insert("xarm7", "SE3() ⊕ SE3(0, 0, 0.267) ⊕ Rz(q0) ⊕ SE3(-90°, -0°, 0°) ⊕ Rz(q1) ⊕ SE3(0, -0.293, 0; 90°, -0°, 0°) ⊕ Rz(q2) ⊕ SE3(0.0525, 0, 0; 90°, -0°, 0°) ⊕ Rz(q3) ⊕ SE3(0.0775, -0.3425, 0; 90°, -0°, 0°) ⊕ Rz(q4) ⊕ SE3(90°, -0°, 0°) ⊕ Rz(q5) ⊕ SE3(0.076, 0.097, 0; -90°, -0°, 0°) ⊕ Rz(q6) ⊕ SE3() ⊕ SE3()");
+//         m.insert("panda", "SE3(0, 0, 0.333) ⊕ Rz(q0) ⊕ SE3(-90°, -0°, 0°) ⊕ Rz(q1) ⊕ SE3(0, -0.316, 0; 90°, -0°, 0°) ⊕ Rz(q2) ⊕ SE3(0.0825, 0, 0; 90°, -0°, 0°) ⊕ Rz(q3) ⊕ SE3(-0.0825, 0.384, 0; -90°, -0°, 0°) ⊕ Rz(q4) ⊕ SE3(90°, -0°, 0°) ⊕ Rz(q5) ⊕ SE3(0.088, 0, 0; 90°, -0°, 0°) ⊕ Rz(q6) ⊕ SE3(0, 0, 0.107) ⊕ SE3(0°, -0°, -45°) ⊕ SE3(0, 0, 0.1034)");
+//         m
+//     };
+//     static ref MODELS_TOTALS: usize = HASHMAP.len();
+// }
+
+const XARM7:&str = "SE3() ⊕ SE3(0, 0, 0.267) ⊕ Rz(q0) ⊕ SE3(-90°, -0°, 0°) ⊕ Rz(q1) ⊕ SE3(0, -0.293, 0; 90°, -0°, 0°) ⊕ Rz(q2) ⊕ SE3(0.0525, 0, 0; 90°, -0°, 0°) ⊕ Rz(q3) ⊕ SE3(0.0775, -0.3425, 0; 90°, -0°, 0°) ⊕ Rz(q4) ⊕ SE3(90°, -0°, 0°) ⊕ Rz(q5) ⊕ SE3(0.076, 0.097, 0; -90°, -0°, 0°) ⊕ Rz(q6) ⊕ SE3() ⊕ SE3()";
+const PANDA:&str = "SE3(0, 0, 0.333) ⊕ Rz(q0) ⊕ SE3(-90°, -0°, 0°) ⊕ Rz(q1) ⊕ SE3(0, -0.316, 0; 90°, -0°, 0°) ⊕ Rz(q2) ⊕ SE3(0.0825, 0, 0; 90°, -0°, 0°) ⊕ Rz(q3) ⊕ SE3(-0.0825, 0.384, 0; -90°, -0°, 0°) ⊕ Rz(q4) ⊕ SE3(90°, -0°, 0°) ⊕ Rz(q5) ⊕ SE3(0.088, 0, 0; 90°, -0°, 0°) ⊕ Rz(q6) ⊕ SE3(0, 0, 0.107) ⊕ SE3(0°, -0°, -45°) ⊕ SE3(0, 0, 0.1034)";
+
+pub fn skew(v: Vector3<f64>) -> Matrix3<f64> {
     Matrix3::new(0.0, -v.z, v.y, v.z, 0.0, -v.x, -v.y, v.x, 0.0)
 }
 
@@ -24,11 +38,11 @@ fn skew_twist(twist: Vector6<f64>) -> Matrix4<f64> {
     )
 }
 
-fn rot3(m: Matrix4<f64>) -> Matrix3<f64> {
+pub fn rot3(m: Matrix4<f64>) -> Matrix3<f64> {
     return m.fixed_view::<3, 3>(0, 0).into();
 }
 
-fn vex(m: Matrix3<f64>) -> Vector3<f64> {
+pub fn vex(m: Matrix3<f64>) -> Vector3<f64> {
     // Extract the angular velocity components from the skew-symmetric 3x3 submatrix
     let omega_x = m[(2, 1)]; // element (2,1) is -ω_x, so take it directly
     let omega_y = m[(0, 2)]; // element (0,2) is ω_y
@@ -37,7 +51,7 @@ fn vex(m: Matrix3<f64>) -> Vector3<f64> {
     Vector3::new(omega_x, omega_y, omega_z)
 }
 
-fn mat_to_twist(m: Matrix4<f64>) -> Vector6<f64> {
+pub fn mat_to_twist(m: Matrix4<f64>) -> Vector6<f64> {
     // Extract the angular velocity components from the skew-symmetric 3x3 submatrix
     let omega_x = m[(2, 1)]; // element (2,1) is -ω_x, so take it directly
     let omega_y = m[(0, 2)]; // element (0,2) is ω_y
@@ -432,8 +446,35 @@ pub struct ETS {
 }
 
 impl ETS {
-    pub fn new(sequence: Vec<ET>) -> Self {
+    pub fn new() -> Self {
+        ETS { sequence: vec![] }
+    }
+
+    pub fn from_vec(sequence: Vec<ET>) -> Self {
         ETS { sequence }
+    }
+
+    // pub fn model(version: str) -> Self {
+    //     match MODELS.get(&version) {
+    //     }
+    // }
+
+    pub fn xarm7() -> Self {
+        match parse_ets_from_string(XARM7) {
+            Ok(ets) => {
+                return ets;
+            }
+            Err(e) => panic!("Parsing 'XARM7' failed: {}", e),
+        }
+    }
+
+    pub fn panda() -> Self {
+        match parse_ets_from_string(PANDA) {
+            Ok(ets) => {
+                return ets;
+            }
+            Err(e) => panic!("Parsing 'PANDA' failed: {}", e),
+        }
     }
 
     pub fn joints_ets_indices(&self) -> Vec<usize> {
@@ -502,7 +543,7 @@ impl ETS {
         result
     }
 
-    pub fn joint_jacobian(&self, joint_index: usize, q: &DVector<f64>) -> Matrix4<f64> {
+    pub fn joint_jacobian(&self, _joint_index: usize, _q: &DVector<f64>) -> Matrix4<f64> {
         let dt = Matrix4::<f64>::identity();
         dt
     }
@@ -517,7 +558,7 @@ impl ETS {
         let mut jacobian_matrix = Matrix6xX::<f64>::zeros(self.ndof());
         let end_effector = self.fk(q, &None, &None);
         let mut current_frame = SE3::from_matrix(Matrix4::identity());
-        for (k, et) in self.sequence.iter().enumerate() {
+        for (_k, et) in self.sequence.iter().enumerate() {
             match et {
                 ET::I => {}
                 ET::Transl { x, y, z } => current_frame = current_frame * SE3::transl(*x, *y, *z),
@@ -594,7 +635,7 @@ impl ETS {
         tolerance: Option<f64>,
     ) -> (DVector<f64>, bool) {
         let tol = tolerance.unwrap_or(1e-6);
-    
+
         let mut qk = match qinit {
             Some(qvec) => qvec,
             None => DVector::from_fn(self.ndof(), |_i, _| rand::random()),
@@ -602,45 +643,48 @@ impl ETS {
         let ee_qk = self.fk(&qk, base, tool);
         println!("Initial Guess (End-effector):\n{:.3}", ee_qk.matrix());
         // println!("ee_qk:\n{:.3}", ee_qk.matrix());
-    
+
         let we = match weights_vec {
             Some(vec) => Matrix6::from_diagonal(&vec),
-            None => Matrix6::<f64>::identity()
+            None => Matrix6::<f64>::identity(),
         };
-    
-        for k in 0..maxiter.unwrap_or(50usize) {
+
+        for _k in 0..maxiter.unwrap_or(50usize) {
             // Compute forward kinematics
             let tk = self.fk(&qk, &base, &tool);
-    
+
             // Compute error using angle_axis
             let err = match base {
-                Some(transform) => angle_axis(&(&transform.clone().inv() * &tk), &(&transform.clone().inv() * t)),
+                Some(transform) => angle_axis(
+                    &(&transform.clone().inv() * &tk),
+                    &(&transform.clone().inv() * t),
+                ),
                 None => angle_axis(&tk, &t),
-            }; 
+            };
             // let err = angle_axis(&(&base.inv() * &tk), &(&base.inv() * T));
-    
+
             // Compute the objective function: 0.5 * err^T * We * err
             let error_norm = 0.5 * (err.transpose() * we * err)[(0, 0)];
             // println!(" iter {}, error norm = {}", k, error_norm);
-    
+
             // Check stopping condition
             if error_norm < tol {
                 qk = qk.map(|v| v.sin().atan2(v.cos()));
                 // println!("Success with {} iterations!", k);
                 return (qk, true);
             }
-    
+
             // Compute Jacobian
             // let jacobian = self.jacobian(&qk, None);
             let jacobian = self.jacobian0(&qk);
-    
+
             // Compute the gradient: g = jacobian^T * We * err
             let g = jacobian.transpose() * we * err;
-    
+
             // Compute the step size (damping factor)
             let lambda = 0.1;
             let wn = lambda * error_norm * DMatrix::<f64>::identity(self.ndof(), self.ndof());
-    
+
             // Compute the update step: dq = (jacobian^T * We * jacobian + Wn)^-1 * g
             let jt_we_j_plus_wn = jacobian.transpose() * we * jacobian + wn;
             let dq = match jt_we_j_plus_wn.try_inverse() {
@@ -648,11 +692,11 @@ impl ETS {
                 None => panic!("No Inverse!"),
             };
             // let dq = m_inv * g;
-    
+
             // Update joint configuration
             qk += dq;
         }
-    
+
         // Return the final joint configuration and success flag
         // Apply angle normalization to keep qk within the valid range (-PI, PI)
         qk = qk.map(|v| v.sin().atan2(v.cos()));
@@ -665,37 +709,36 @@ pub fn angle_axis(t: &SE3, tdesired: &SE3) -> Vector6<f64> {
     // translation error
     let translation_residual = tdesired.translation() - t.translation();
     // rotation error
-    let mut rotation_residual_vec = Vector3::zeros();
+    let rotation_residual_vec;
     let rotation_residual_matrix = tdesired.rotation_matrix() * t.rotation_matrix().transpose();
     let var = Vector3::from_vec(vec![
-        rotation_residual_matrix[(2,1)] - rotation_residual_matrix[(1,2)],
-        rotation_residual_matrix[(0,2)] - rotation_residual_matrix[(2,0)],
-        rotation_residual_matrix[(1,0)] - rotation_residual_matrix[(0,1)],
+        rotation_residual_matrix[(2, 1)] - rotation_residual_matrix[(1, 2)],
+        rotation_residual_matrix[(0, 2)] - rotation_residual_matrix[(2, 0)],
+        rotation_residual_matrix[(1, 0)] - rotation_residual_matrix[(0, 1)],
     ]);
     let rotation_residual_matrix_trace = rotation_residual_matrix.trace();
     let var_norm = var.norm();
-    
+
     if var_norm < 1e-6 {
-        // todo!();
         if rotation_residual_matrix_trace > 0f64 {
-            // keep zeros for `rotation_residual_vec`
-            // rotation_residual_vec = Vector3::zeros();
-            return residual;
+            rotation_residual_vec = Vector3::zeros();
         } else {
-            // rotation_residual_vec = FRAC_PI_2 * ()
             rotation_residual_vec = Vector3::from_vec(vec![
-                FRAC_PI_2 * (rotation_residual_matrix[(0,0)] + 1f64),
-                FRAC_PI_2 * (rotation_residual_matrix[(1,1)] + 1f64),
-                FRAC_PI_2 * (rotation_residual_matrix[(2,2)] + 1f64)
-            ])
+                FRAC_PI_2 * (rotation_residual_matrix[(0, 0)] + 1f64),
+                FRAC_PI_2 * (rotation_residual_matrix[(1, 1)] + 1f64),
+                FRAC_PI_2 * (rotation_residual_matrix[(2, 2)] + 1f64),
+            ]);
         }
     } else {
         let angle = var_norm.atan2(rotation_residual_matrix_trace - 1f64);
-        rotation_residual_vec = (angle / var_norm) * var; 
+        rotation_residual_vec = (angle / var_norm) * var;
     }
-
-    residual.fixed_rows_mut::<3>(3).copy_from(&rotation_residual_vec);
-    residual.fixed_rows_mut::<3>(0).copy_from(&translation_residual);
+    residual
+        .fixed_rows_mut::<3>(3)
+        .copy_from(&rotation_residual_vec);
+    residual
+        .fixed_rows_mut::<3>(0)
+        .copy_from(&translation_residual);
     residual
 }
 
@@ -711,4 +754,121 @@ impl std::fmt::Display for ETS {
 
         write!(f, "[{}]", sequence_str) // Write the result in the format "[...]" for ETS
     }
+}
+
+fn parse_transform(transformation: &str) -> Result<ET, String> {
+    // element.split_inclusive("(")
+    let open_paren = transformation
+        .find('(')
+        .ok_or("Missing opening parenthesis");
+    let open_index = match open_paren {
+        Ok(index) => index,
+        Err(_error) => return Err(String::from("Invalid openning paranthesis index!")),
+    };
+    let close_paren = transformation
+        .find(')')
+        .ok_or("Missing closing parenthesis");
+    let close_index = match close_paren {
+        Ok(index) => index,
+        Err(_error) => return Err(String::from("Invalid closing paranthesis index!")),
+    };
+    //Extract the type and the value
+    let transform_type_str = &transformation[0..open_index];
+    let value_str = &transformation[open_index + 1..close_index];
+    let _transform = match (transform_type_str, value_str) {
+        ("Rz", arg_index) => {
+            // let joint_index = args[];
+            if let Some(remainder) = arg_index.strip_prefix('q') {
+                // Try to parse the remainder as i32
+                match remainder.parse::<i32>() {
+                    Ok(num) => {
+                        return Ok(ET::Rz {
+                            angle: 0f64,
+                            isjoint: true,
+                            index: num,
+                        });
+                    }
+                    Err(_) => return Err(String::from("Joint Index failed to parse as i32")),
+                }
+            } else {
+                return Err(String::from("The input does not start with 'q'"));
+            }
+        }
+        ("SE3", args) => {
+            if args.len() > 0usize {
+                if args.contains(";") {
+                    let parts: Vec<&str> = args.split(';').collect();
+                    if parts.len() != 2 {
+                        return Err(String::from("Input format is incorrect"));
+                    }
+
+                    // First part: Parse the Cartesian coordinates
+                    let cartesian_coords: Vec<f64> = parts[0]
+                        .split(',')
+                        .map(|s| s.parse::<f64>().unwrap())
+                        .collect();
+
+                    // Second part: Parse the angles, remove '°', and convert to radians
+                    let angles_in_radians: Vec<f64> = parts[1]
+                        .split(',')
+                        .map(|s| s.trim_end_matches('°').parse::<f64>().unwrap().to_radians())
+                        .collect();
+
+                    let x = cartesian_coords[0];
+                    let y = cartesian_coords[1];
+                    let z = cartesian_coords[2];
+                    let roll = angles_in_radians[0];
+                    let pitch = angles_in_radians[1];
+                    let yaw = angles_in_radians[2];
+                    return Ok(ET::T {
+                        x: x,
+                        y: y,
+                        z: z,
+                        roll: roll,
+                        pitch: pitch,
+                        yaw: yaw,
+                    });
+                } else if args.contains('°') {
+                    let angles_in_radians: Vec<f64> = args
+                        .split(',')
+                        .map(|s| s.trim_end_matches('°').parse::<f64>().unwrap().to_radians())
+                        .collect();
+                    let roll = angles_in_radians[0];
+                    let pitch = angles_in_radians[1];
+                    let yaw = angles_in_radians[2];
+                    return Ok(ET::RPY {
+                        roll: roll,
+                        pitch: pitch,
+                        yaw: yaw,
+                    });
+                } else {
+                    let cartesian_coords: Vec<f64> =
+                        args.split(',').map(|s| s.parse::<f64>().unwrap()).collect();
+                    let x = cartesian_coords[0];
+                    let y = cartesian_coords[1];
+                    let z = cartesian_coords[2];
+                    return Ok(ET::Transl { x: x, y: y, z: z });
+                }
+            }
+        }
+        _ => return Err(String::from("Invalid Transform String")),
+    };
+    // print!("{}", transform_type_str);
+    // println!(": {}", value_str);
+    Ok(ET::I)
+}
+
+pub fn parse_ets_from_string(xarm_7_ets_string: &str) -> Result<ETS, String> {
+    // let transformations: Vec<&str> = transformations.split_whitespace().collect();
+    let mut sequence = Vec::new();
+    let no_space_string = xarm_7_ets_string.replace(" ", "");
+    let string_transforms: Vec<&str> = no_space_string.split('⊕').collect();
+    // let _ = string_transforms.map(|x| println!("{}", x));
+    for transformation in &string_transforms {
+        match parse_transform(&transformation) {
+            Ok(et) => sequence.push(et),
+            Err(e) => return Err(e),
+        }
+    }
+    Ok(ETS::from_vec(sequence))
 }
