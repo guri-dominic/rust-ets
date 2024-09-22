@@ -4,9 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+lazy_static = "1.5.0"
 nalgebra = "0.33.0"
 rand = "0.8.5"
 
 [[bin]]
 name = "xp-ets"
 path = "experiments/xp-ets.rs"
+
+[[bin]]
+name = "xp-ets-ik"
+path = "experiments/xp-ets-ik.rs"
