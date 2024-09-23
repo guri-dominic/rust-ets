@@ -1,7 +1,9 @@
 use std::f64::consts::FRAC_PI_2;
 
-use ets::{ETS, SE3};
+use ets::{ETS::ETS, SE3::SE3};
+// use ets::ETS::ETS;
 use nalgebra::DVector;
+use ets;
 
 fn main() {
     let ets = ETS::xarm7();

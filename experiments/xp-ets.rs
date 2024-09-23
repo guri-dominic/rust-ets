@@ -1,4 +1,4 @@
-use ets::parse_ets_from_string;
+use ets::ETS::parse_ets_from_string;
 
 fn main() {
     // let xarm_7_ets_string = String::from("SE3() ⊕ SE3(0, 0, 0.267) ⊕ Rz(q0) ⊕ SE3(-90°, -0°, 0°) ⊕ Rz(q1) ⊕ SE3(0, -0.293, 0; 90°, -0°, 0°) ⊕ Rz(q2) ⊕ SE3(0.0525, 0, 0; 90°, -0°, 0°) ⊕ Rz(q3) ⊕ SE3(0.0775, -0.3425, 0; 90°, -0°, 0°) ⊕ Rz(q4) ⊕ SE3(90°, -0°, 0°) ⊕ Rz(q5) ⊕ SE3(0.076, 0.097, 0; -90°, -0°, 0°) ⊕ Rz(q6) ⊕ SE3() ⊕ SE3()");

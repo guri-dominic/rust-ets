@@ -15,3 +15,7 @@ path = "experiments/xp-ets.rs"
 [[bin]]
 name = "xp-ets-ik"
 path = "experiments/xp-ets-ik.rs"
+
+[[bin]]
+name = "xp-ets-smm"
+path = "experiments/xp-ets-smm.rs"
