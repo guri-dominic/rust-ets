@@ -19,3 +19,12 @@ path = "experiments/xp-ets-ik.rs"
 [[bin]]
 name = "xp-ets-smm"
 path = "experiments/xp-ets-smm.rs"
+
+
+[[bin]]
+name = "xp-null-space"
+path = "experiments/xp-null-space.rs"
+
+[[bin]]
+name = "xp-ets-jacobian-null-space"
+path = "experiments/xp-ets-jacobian-null-space.rs"
